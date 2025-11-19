@@ -15,7 +15,6 @@ dbLink = cfg["dbLink"]
 
 app = Client(
     "main_bot",
-    api_hash=api_hash,
     bot_token=bot_token
 )
 engine = create_engine(dbLink)

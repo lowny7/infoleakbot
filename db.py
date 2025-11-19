@@ -1,7 +1,6 @@
 from datetime import datetime
 from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker
 from pyrogram import Client, filters
 from pyrogram.types import ReplyKeyboardMarkup, KeyboardButton
 from json import loads
@@ -70,7 +69,6 @@ base.metadata.create_all(engine)
 ### CLEANER ###
 
 def cleaner(dirty):
-    # Костыль из-за плохого импорта базы
     clean = dirty
 
     if getattr(dirty, 'phone', None):
@@ -99,27 +97,28 @@ def cleaner(dirty):
 
 @app.on_message(filters.new_chat_members)
 def leaveUnauthChat(client, message):
-    # usa client.me.id para checar o bot
     try:
         if message.new_chat_members[0].id == client.me.id:
             app.send_message(chat_id=message.chat.id, text=strings["dm"])
             app.leave_chat(message.chat.id)
     except Exception:
-        # safety: evitar crash se estrutura diferente
         return
 
 @app.on_message(filters.command("start"))
 def start(client, message):
-    app.send_message(chat_id=message.chat.id, text=strings["start"], reply_markup=ReplyKeyboardMarkup(
-                    [
-                        [
-                            KeyboardButton(
-                                text="/tg40m"),
-                            KeyboardButton(
-                                text="/eyeofgod")
-                        ]
-                    ]
-                ), reply_to_message_id=message["message_id"])
+    app.send_message(
+        chat_id=message.chat.id,
+        text=strings["start"],
+        reply_markup=ReplyKeyboardMarkup(
+            [
+                [
+                    KeyboardButton(text="/tg40m"),
+                    KeyboardButton(text="/eyeofgod")
+                ]
+            ]
+        ),
+        reply_to_message_id=message["message_id"]
+    )
 
 @app.on_message(filters.command("privacy"))
 def privacy(client, message):
@@ -135,17 +134,16 @@ def eyeofgod(client, message):
         else:
             n = len(obj)
             raz = 'раз'
-            if n % 10 == 2 or n % 10 == 3 or n % 10 == 4:
+            if n % 10 in (2, 3, 4):
                 raz = 'раза'
-            if n % 100 == 12 or n % 100 == 13 or n % 100 == 14:
+            if n % 100 in (12, 13, 14):
                 raz = 'раз'
             toUser = f"Увы, вы найдены в базе {n} {raz}! Вот ваши данные..."
             for occurance in obj:
                 mention = cleaner(occurance)
-                toUser = toUser + f"\n\nУникальный ID в Telegram: `{mention.id}`\nТелефон: `{mention.phone}`\nИмя пользователя: `{mention.username}`\nИмя: `{mention.first_name}`\nФамилия: `{mention.last_name}`"
-            toUser = toUser + strings["safe_eye"]    
+                toUser += f"\n\nУникальный ID в Telegram: `{mention.id}`\nТелефон: `{mention.phone}`\nИмя пользователя: `{mention.username}`\nИмя: `{mention.first_name}`\nФамилия: `{mention.last_name}`"
+            toUser += strings["safe_eye"]
             app.edit_message_text(chat_id=message.chat.id, message_id=looking.message_id, text=toUser, parse_mode="markdown")
-
 
 @app.on_message(filters.command("tg40m"))
 def tg40m(client, message):
@@ -157,18 +155,18 @@ def tg40m(client, message):
         else:
             n = len(obj)
             raz = 'раз'
-            if n % 10 == 2 or n % 10 == 3 or n % 10 == 4:
+            if n % 10 in (2, 3, 4):
                 raz = 'раза'
-            if n % 100 == 12 or n % 100 == 13 or n % 100 == 14:
+            if n % 100 in (12, 13, 14):
                 raz = 'раз'
             toUser = f"Увы, вы найдены в базе {n} {raz}! Вот ваши данные..."
             for mention in obj:
-                if mention.wo == "" or mention.wo == " ":
+                if mention.wo.strip() == "":
                     date = ""
                 else:
                     date = datetime.fromtimestamp(int(mention.wo.strip("0")))
-                toUser = toUser + f"\n\nИмя: `{mention.name}`\nФамилия: `{mention.fname}`\nТелефонный номер: `{mention.phone}`\nУникальный ID в Telegram: `{mention.uid}`\nИмя пользователя: `{mention.nik}`\nВремя последней сетевой активности: `{date}`"
-            toUser = toUser + strings["safe_tg40m"]
+                toUser += f"\n\nИмя: `{mention.name}`\nФамилия: `{mention.fname}`\nТелефонный номер: `{mention.phone}`\nУникальный ID в Telegram: `{mention.uid}`\nИмя пользователя: `{mention.nik}`\nВремя последней сетевой активности: `{date}`"
+            toUser += strings["safe_tg40m"]
             app.edit_message_text(chat_id=message.chat.id, message_id=looking.message_id, text=toUser, parse_mode="markdown")
 
 @app.on_message()

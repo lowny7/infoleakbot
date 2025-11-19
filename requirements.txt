@@ -1,4 +1,4 @@
-sqlalchemy
-pyrogram
-tgcrypto
+Pyrogram==1.4.16
+TgCrypto
+SQLAlchemy==2.0.29
 psycopg2-binary

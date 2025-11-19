@@ -10,8 +10,15 @@ with open("./config.json", "r") as f:
     cfg = loads(f.read())
 with open("./strings.json", "r") as f:
     strings = loads(f.read())
+bot_token = cfg["bot_token"]
 dbLink = cfg["dbLink"]
 
+app = Client(
+    "main_bot",
+    api_id=api_id,
+    api_hash=api_hash,
+    bot_token=bot_token
+)
 engine = create_engine(dbLink)
 base = declarative_base()
 Session = sessionmaker(bind=engine)

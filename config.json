@@ -1,6 +1,6 @@
 {
-    "botID": 1000000000,
-    "api_id": 123456,
-    "api_hash": "abcdef123456",
-    "dbLink": "postgresql://postgres:docker@localhost/telegram"
+    "botID": 8021182977,
+    "api_id": 39249537,
+    "api_hash": "8c34c853be8c8f3f7fcc89586247aafe",
+    "dbLink": "postgresql://postgres:nsFhbuItTkBFZfZnZtkPhZcVtcnAkZul@switchyard.proxy.rlwy.net:33116/railway"
 }

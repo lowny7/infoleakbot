@@ -12,7 +12,6 @@ with open("./strings.json", "r") as f:
     strings = loads(f.read())
 dbLink = cfg["dbLink"]
 
-app = Client("my_account", api_id, api_hash)
 engine = create_engine(dbLink)
 base = declarative_base()
 Session = sessionmaker(bind=engine)

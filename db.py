@@ -10,7 +10,6 @@ with open("./config.json", "r") as f:
     cfg = loads(f.read())
 with open("./strings.json", "r") as f:
     strings = loads(f.read())
-botID = cfg["botID"]
 dbLink = cfg["dbLink"]
 
 app = Client("my_account", api_id, api_hash)

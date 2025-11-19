@@ -1,3 +1,12 @@
+# Arquivos corrigidos: db.py + config.json
+
+Abaixo estão os arquivos já prontos. **Use o editor do GitHub (ou do Railway) para substituir os arquivos correspondentes no seu fork** e depois faça `Redeploy` no Railway.
+
+---
+
+## db.py
+
+```python
 from datetime import datetime
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
@@ -6,17 +15,27 @@ from pyrogram import Client, filters
 from pyrogram.types import ReplyKeyboardMarkup, KeyboardButton
 from json import loads
 
+# Carrega configuração
 with open("./config.json", "r") as f:
     cfg = loads(f.read())
 with open("./strings.json", "r") as f:
     strings = loads(f.read())
-bot_token = cfg["bot_token"]
-dbLink = cfg["dbLink"]
 
+# Espera-se que config.json contenha: bot_token, api_id, api_hash, dbLink
+bot_token = cfg.get("bot_token")
+api_id = cfg.get("api_id")
+api_hash = cfg.get("api_hash")
+dbLink = cfg.get("dbLink")
+
+# Cliente do Telegram (modo bot)
 app = Client(
     "main_bot",
+    api_id=api_id,
+    api_hash=api_hash,
     bot_token=bot_token
 )
+
+# Banco de dados (SQLAlchemy sync)
 engine = create_engine(dbLink)
 base = declarative_base()
 Session = sessionmaker(bind=engine)
@@ -60,25 +79,25 @@ base.metadata.create_all(engine)
 ### CLEANER ###
 
 def cleaner(dirty):
-    #Костыль из-за плохого импорта базы
+    # Костыль из-за плохого импорта базы
     clean = dirty
 
-    if dirty.phone:
+    if getattr(dirty, 'phone', None):
         clean.phone = dirty.phone
     else:
         clean.phone = " "
 
-    if dirty.username:
+    if getattr(dirty, 'username', None):
         clean.username = dirty.username
     else:
         clean.username = " "
 
-    if dirty.first_name:
+    if getattr(dirty, 'first_name', None):
         clean.first_name = dirty.first_name
     else:
         clean.first_name = " "
 
-    if dirty.last_name:
+    if getattr(dirty, 'last_name', None):
         clean.last_name = dirty.last_name
     else:
         clean.last_name = " "
@@ -89,9 +108,14 @@ def cleaner(dirty):
 
 @app.on_message(filters.new_chat_members)
 def leaveUnauthChat(client, message):
-    if message["new_chat_members"][0]["id"] == botID:
-        app.send_message(chat_id=message.chat.id, text=strings["dm"])
-        app.leave_chat(message["chat"]["id"])
+    # usa client.me.id para checar o bot
+    try:
+        if message.new_chat_members[0].id == client.me.id:
+            app.send_message(chat_id=message.chat.id, text=strings["dm"])
+            app.leave_chat(message.chat.id)
+    except Exception:
+        # safety: evitar crash se estrutura diferente
+        return
 
 @app.on_message(filters.command("start"))
 def start(client, message):
@@ -112,9 +136,9 @@ def privacy(client, message):
 
 @app.on_message(filters.command("eyeofgod"))
 def eyeofgod(client, message):
-    if message["chat"]["type"] == "private":
+    if message.chat.type == "private":
         looking = app.send_message(chat_id=message.chat.id, text="Ищем в базе...", reply_to_message_id=message["message_id"])
-        obj = session.query(EntryEYE).filter(EntryEYE.id == str(message["from_user"]["id"])).all()
+        obj = session.query(EntryEYE).filter(EntryEYE.id == str(message.from_user.id)).all()
         if len(obj) == 0:
             app.edit_message_text(chat_id=message.chat.id, message_id=looking.message_id, text=strings["congrats_eye"], parse_mode="markdown")
         else:
@@ -134,9 +158,9 @@ def eyeofgod(client, message):
 
 @app.on_message(filters.command("tg40m"))
 def tg40m(client, message):
-    if message["chat"]["type"] == "private":
+    if message.chat.type == "private":
         looking = app.send_message(chat_id=message.chat.id, text="Ищем в базе...", reply_to_message_id=message["message_id"])
-        obj = session.query(EntryTG40M).filter(EntryTG40M.uid == str(message["from_user"]["id"])).all()
+        obj = session.query(EntryTG40M).filter(EntryTG40M.uid == str(message.from_user.id)).all()
         if len(obj) == 0:
             app.edit_message_text(chat_id=message.chat.id, message_id=looking.message_id, text=strings["congrats_tg40m"], parse_mode="markdown")
         else:
@@ -160,4 +184,29 @@ def tg40m(client, message):
 def checkState(client, message):
     app.send_message(message["chat"]["id"], strings["invalid"], reply_to_message_id=message["message_id"])
 
-app.run()
+if __name__ == "__main__":
+    app.run()
+```
+
+---
+
+## config.json
+
+```json
+{
+    "bot_token": "8021182977:AAH59ELIhFo0St57c3CLVkJVM8s9X0AsQMQ",
+    "api_id": 39249537,
+    "api_hash": "8c34c853be8c8f3f7fcc89586247aafe",
+    "dbLink": "postgresql://postgres:nsFhbuItTkBFZfZnZtkPhZcVtcnAkZul@switchyard.proxy.rlwy.net:33116/railway"
+}
+```
+
+---
+
+### Próximos passos (rápido):
+
+1. Substitua `db.py` e `config.json` no seu fork pelo conteúdo acima. (Edite pelo GitHub web).
+2. Commit → Volte ao Railway → Redeploy.
+3. Abra Logs e confirme que não tem prompts do Pyrogram e que conectou ao PostgreSQL.
+
+Se quiser, posso também criar um `Procfile` e `requirements.txt` prontos no repo — me avisa.

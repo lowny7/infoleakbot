@@ -1,12 +1,3 @@
-# Arquivos corrigidos: db.py + config.json
-
-Abaixo estão os arquivos já prontos. **Use o editor do GitHub (ou do Railway) para substituir os arquivos correspondentes no seu fork** e depois faça `Redeploy` no Railway.
-
----
-
-## db.py
-
-```python
 from datetime import datetime
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
@@ -186,27 +177,3 @@ def checkState(client, message):
 
 if __name__ == "__main__":
     app.run()
-```
-
----
-
-## config.json
-
-```json
-{
-    "bot_token": "8021182977:AAH59ELIhFo0St57c3CLVkJVM8s9X0AsQMQ",
-    "api_id": 39249537,
-    "api_hash": "8c34c853be8c8f3f7fcc89586247aafe",
-    "dbLink": "postgresql://postgres:nsFhbuItTkBFZfZnZtkPhZcVtcnAkZul@switchyard.proxy.rlwy.net:33116/railway"
-}
-```
-
----
-
-### Próximos passos (rápido):
-
-1. Substitua `db.py` e `config.json` no seu fork pelo conteúdo acima. (Edite pelo GitHub web).
-2. Commit → Volte ao Railway → Redeploy.
-3. Abra Logs e confirme que não tem prompts do Pyrogram e que conectou ao PostgreSQL.
-
-Se quiser, posso também criar um `Procfile` e `requirements.txt` prontos no repo — me avisa.

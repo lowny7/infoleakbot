@@ -1,6 +1,4 @@
 {
-    "botID": 8021182977,
-    "api_id": 39249537,
-    "api_hash": "8c34c853be8c8f3f7fcc89586247aafe",
+    "bot_token": "8021182977:AAH59ELIhFo0St57c3CLVkJVM8s9X0AsQMQ",
     "dbLink": "postgresql://postgres:nsFhbuItTkBFZfZnZtkPhZcVtcnAkZul@switchyard.proxy.rlwy.net:33116/railway"
 }

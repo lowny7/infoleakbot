@@ -15,7 +15,6 @@ dbLink = cfg["dbLink"]
 
 app = Client(
     "main_bot",
-    api_id=api_id,
     api_hash=api_hash,
     bot_token=bot_token
 )

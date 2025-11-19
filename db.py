@@ -71,25 +71,10 @@ base.metadata.create_all(engine)
 def cleaner(dirty):
     clean = dirty
 
-    if getattr(dirty, 'phone', None):
-        clean.phone = dirty.phone
-    else:
-        clean.phone = " "
-
-    if getattr(dirty, 'username', None):
-        clean.username = dirty.username
-    else:
-        clean.username = " "
-
-    if getattr(dirty, 'first_name', None):
-        clean.first_name = dirty.first_name
-    else:
-        clean.first_name = " "
-
-    if getattr(dirty, 'last_name', None):
-        clean.last_name = dirty.last_name
-    else:
-        clean.last_name = " "
+    clean.phone = getattr(dirty, "phone", " ")
+    clean.username = getattr(dirty, "username", " ")
+    clean.first_name = getattr(dirty, "first_name", " ")
+    clean.last_name = getattr(dirty, "last_name", " ")
 
     return clean
 
@@ -117,61 +102,117 @@ def start(client, message):
                 ]
             ]
         ),
-        reply_to_message_id=message["message_id"]
+        reply_to_message_id=message.message_id   # <--- CORRIGIDO
     )
 
 @app.on_message(filters.command("privacy"))
 def privacy(client, message):
-    app.send_message(chat_id=message.chat.id, text=strings["privacy"], reply_to_message_id=message["message_id"])
+    app.send_message(
+        chat_id=message.chat.id,
+        text=strings["privacy"],
+        reply_to_message_id=message.message_id   # <--- CORRIGIDO
+    )
 
 @app.on_message(filters.command("eyeofgod"))
 def eyeofgod(client, message):
     if message.chat.type == "private":
-        looking = app.send_message(chat_id=message.chat.id, text="Ищем в базе...", reply_to_message_id=message["message_id"])
+        looking = app.send_message(
+            chat_id=message.chat.id,
+            text="Ищем в базе...",
+            reply_to_message_id=message.message_id   # <--- CORRIGIDO
+        )
         obj = session.query(EntryEYE).filter(EntryEYE.id == str(message.from_user.id)).all()
+
         if len(obj) == 0:
-            app.edit_message_text(chat_id=message.chat.id, message_id=looking.message_id, text=strings["congrats_eye"], parse_mode="markdown")
+            app.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=looking.message_id,
+                text=strings["congrats_eye"],
+                parse_mode="markdown"
+            )
         else:
             n = len(obj)
-            raz = 'раз'
-            if n % 10 in (2, 3, 4):
-                raz = 'раза'
+            raz = "раза" if n % 10 in (2, 3, 4) else "раз"
             if n % 100 in (12, 13, 14):
-                raz = 'раз'
+                raz = "раз"
+
             toUser = f"Увы, вы найдены в базе {n} {raz}! Вот ваши данные..."
-            for occurance in obj:
-                mention = cleaner(occurance)
-                toUser += f"\n\nУникальный ID в Telegram: `{mention.id}`\nТелефон: `{mention.phone}`\nИмя пользователя: `{mention.username}`\nИмя: `{mention.first_name}`\nФамилия: `{mention.last_name}`"
+
+            for occ in obj:
+                m = cleaner(occ)
+                toUser += (
+                    f"\n\nУникальный ID в Telegram: `{m.id}`"
+                    f"\nТелефон: `{m.phone}`"
+                    f"\nИмя пользователя: `{m.username}`"
+                    f"\nИмя: `{m.first_name}`"
+                    f"\nФамилия: `{m.last_name}`"
+                )
+
             toUser += strings["safe_eye"]
-            app.edit_message_text(chat_id=message.chat.id, message_id=looking.message_id, text=toUser, parse_mode="markdown")
+
+            app.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=looking.message_id,
+                text=toUser,
+                parse_mode="markdown"
+            )
 
 @app.on_message(filters.command("tg40m"))
 def tg40m(client, message):
     if message.chat.type == "private":
-        looking = app.send_message(chat_id=message.chat.id, text="Ищем в базе...", reply_to_message_id=message["message_id"])
+        looking = app.send_message(
+            chat_id=message.chat.id,
+            text="Ищем в базе...",
+            reply_to_message_id=message.message_id   # <--- CORRIGIDO
+        )
         obj = session.query(EntryTG40M).filter(EntryTG40M.uid == str(message.from_user.id)).all()
+
         if len(obj) == 0:
-            app.edit_message_text(chat_id=message.chat.id, message_id=looking.message_id, text=strings["congrats_tg40m"], parse_mode="markdown")
+            app.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=looking.message_id,
+                text=strings["congrats_tg40m"],
+                parse_mode="markdown"
+            )
         else:
             n = len(obj)
-            raz = 'раз'
-            if n % 10 in (2, 3, 4):
-                raz = 'раза'
+            raz = "раза" if n % 10 in (2, 3, 4) else "раз"
             if n % 100 in (12, 13, 14):
-                raz = 'раз'
+                raz = "раз"
+
             toUser = f"Увы, вы найдены в базе {n} {raz}! Вот ваши данные..."
-            for mention in obj:
-                if mention.wo.strip() == "":
+
+            for m in obj:
+                if m.wo.strip() == "":
                     date = ""
                 else:
-                    date = datetime.fromtimestamp(int(mention.wo.strip("0")))
-                toUser += f"\n\nИмя: `{mention.name}`\nФамилия: `{mention.fname}`\nТелефонный номер: `{mention.phone}`\nУникальный ID в Telegram: `{mention.uid}`\nИмя пользователя: `{mention.nik}`\nВремя последней сетевой активности: `{date}`"
+                    date = datetime.fromtimestamp(int(m.wo.strip("0")))
+
+                toUser += (
+                    f"\n\nИмя: `{m.name}`"
+                    f"\nФамилия: `{m.fname}`"
+                    f"\nТелефонный номер: `{m.phone}`"
+                    f"\nУникальный ID в Telegram: `{m.uid}`"
+                    f"\nИмя пользователя: `{m.nik}`"
+                    f"\nВремя последней сетевой активности: `{date}`"
+                )
+
             toUser += strings["safe_tg40m"]
-            app.edit_message_text(chat_id=message.chat.id, message_id=looking.message_id, text=toUser, parse_mode="markdown")
+
+            app.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=looking.message_id,
+                text=toUser,
+                parse_mode="markdown"
+            )
 
 @app.on_message()
 def checkState(client, message):
-    app.send_message(message["chat"]["id"], strings["invalid"], reply_to_message_id=message["message_id"])
+    app.send_message(
+        message.chat.id,          # <--- CORRIGIDO
+        strings["invalid"],
+        reply_to_message_id=message.message_id   # <--- CORRIGIDO
+    )
 
 if __name__ == "__main__":
     app.run()
